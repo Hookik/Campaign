@@ -60,7 +60,7 @@ export default function CampaignBrowse({ token }: CampaignBrowseProps) {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Discover Campaigns</h1>
+        <h1 className="text-3xl font-bold" style={{ color: '#5F28A5' }}>Discover Campaigns</h1>
         <p className="text-gray-500 mt-1">Find paid collaboration opportunities from top brands</p>
       </div>
 
@@ -76,7 +76,7 @@ export default function CampaignBrowse({ token }: CampaignBrowseProps) {
               placeholder="Search campaigns..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-2 focus:border-transparent"
             />
           </div>
         </form>

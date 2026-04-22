@@ -38,7 +38,7 @@ export default function AdminFlagsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Feature Flags</h1>
+      <h1 className="text-3xl font-bold mb-2" style={{ color: '#5F28A5' }}>Feature Flags</h1>
       <p className="text-gray-500 mb-8">Control which features are live on the platform</p>
 
       <div className="bg-white border rounded-xl divide-y">

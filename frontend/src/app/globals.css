@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --hookik-purple: #5F28A5;
+  --hookik-purple-light: #8937CE;
+  --hookik-purple-bg: #F2F5FF;
+  --hookik-green: #1B8E47;
+  --hookik-blue: #228BE6;
+  --hookik-gray: #475467;
+  --hookik-gray-light: #868E96;
+  --hookik-bg: #F6F7F9;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.btn-primary {
+  background-color: var(--hookik-purple);
+  color: white;
+  padding: 0.625rem 1.5rem;
+  border-radius: 2.25rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary:hover {
+  background-color: var(--hookik-purple-light);
+}
+
+.btn-outline {
+  border: 2px solid var(--hookik-purple);
+  color: var(--hookik-purple);
+  padding: 0.5rem 1.5rem;
+  border-radius: 2.25rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-outline:hover {
+  background-color: var(--hookik-purple);
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.badge-pro {
+  background: linear-gradient(135deg, #5F28A5, #8937CE);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-pro-plus {
+  background: linear-gradient(135deg, #8937CE, #B197FC);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-verified {
+  color: var(--hookik-purple);
+}

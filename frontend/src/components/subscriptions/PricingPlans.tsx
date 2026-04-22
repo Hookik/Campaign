@@ -56,7 +56,7 @@ export default function PricingPlans({ token }: PricingPlansProps) {
 
   const planColors: Record<string, { border: string; bg: string; btn: string; badge: string }> = {
     free: { border: 'border-gray-200', bg: 'bg-white', btn: 'bg-gray-100 text-gray-700 hover:bg-gray-200', badge: '' },
-    pro: { border: 'border-purple-300', bg: 'bg-white', btn: 'bg-purple-600 text-white hover:bg-purple-700', badge: 'bg-purple-600' },
+    pro: { border: 'border-purple-300', bg: 'bg-white', btn: 'btn-primary', badge: 'bg-[#5F28A5]' },
     pro_plus: { border: 'border-yellow-300', bg: 'bg-gradient-to-b from-yellow-50 to-white', btn: 'bg-yellow-500 text-white hover:bg-yellow-600', badge: 'bg-yellow-500' },
   };
 
@@ -72,7 +72,7 @@ export default function PricingPlans({ token }: PricingPlansProps) {
           <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-400'}`}>Monthly</span>
           <button
             onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
-            className={`w-12 h-6 rounded-full relative transition-colors ${billingCycle === 'annual' ? 'bg-purple-600' : 'bg-gray-300'}`}
+            className={`w-12 h-6 rounded-full relative transition-colors ${billingCycle === 'annual' ? 'bg-[#5F28A5]' : 'bg-gray-300'}`}
           >
             <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${billingCycle === 'annual' ? 'translate-x-6' : 'translate-x-0.5'}`} />
           </button>

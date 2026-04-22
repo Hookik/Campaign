@@ -52,8 +52,8 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Subscription Management</h1>
-        <button onClick={() => setShowComp(!showComp)} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700">
+        <h1 className="text-3xl font-bold" style={{ color: '#5F28A5' }}>Subscription Management</h1>
+        <button onClick={() => setShowComp(!showComp)} className="btn-primary text-sm">
           {showComp ? 'Close' : 'Comp a Creator'}
         </button>
       </div>
@@ -78,7 +78,7 @@ export default function AdminSubscriptionsPage() {
 
       {/* Comp form */}
       {showComp && (
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 mb-8">
+        <div className="border rounded-xl p-6 mb-8" style={{ backgroundColor: '#F2F5FF', borderColor: '#D4C4F0' }}>
           <h3 className="font-bold text-gray-900 mb-4">Comp a Creator</h3>
           <div className="flex gap-4">
             <input type="text" value={compForm.creator_id} onChange={e => setCompForm(f => ({ ...f, creator_id: e.target.value }))}
@@ -87,7 +87,7 @@ export default function AdminSubscriptionsPage() {
               <option value="pro">Creator Pro</option>
               <option value="pro_plus">Creator Pro+</option>
             </select>
-            <button onClick={handleComp} className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700">Grant</button>
+            <button onClick={handleComp} className="btn-primary text-sm">Grant</button>
           </div>
         </div>
       )}

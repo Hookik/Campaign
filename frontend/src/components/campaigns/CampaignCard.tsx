@@ -26,7 +26,7 @@ export default function CampaignCard({ campaign, locked = false }: CampaignCardP
   return (
     <div className={`bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 ${isLocked ? 'opacity-80' : ''}`}>
       {/* Cover Image */}
-      <div className="h-40 bg-gradient-to-br from-purple-500 to-pink-500 relative">
+      <div className="h-40 relative" style={{ background: 'linear-gradient(135deg, #5F28A5, #8937CE)' }}>
         {campaign.cover_image_url && (
           <img
             src={campaign.cover_image_url}
@@ -40,7 +40,7 @@ export default function CampaignCard({ campaign, locked = false }: CampaignCardP
               <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              <span className="text-sm font-semibold text-purple-700">Pro Required</span>
+              <span className="text-sm font-semibold" style={{ color: '#5F28A5' }}>Pro Required</span>
             </div>
           </div>
         )}
@@ -108,14 +108,16 @@ export default function CampaignCard({ campaign, locked = false }: CampaignCardP
         {isLocked ? (
           <Link
             href="/subscriptions"
-            className="block w-full text-center bg-purple-50 text-purple-700 py-2.5 rounded-lg font-semibold hover:bg-purple-100 transition text-sm"
+            className="block w-full text-center py-2.5 rounded-lg font-semibold transition text-sm"
+            style={{ backgroundColor: '#F2F5FF', color: '#5F28A5' }}
           >
             Upgrade to Apply
           </Link>
         ) : (
           <Link
             href={`/campaigns/${campaign.id}`}
-            className="block w-full text-center bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition text-sm"
+            className="block w-full text-center text-white py-2.5 rounded-lg font-semibold hover:opacity-90 transition text-sm"
+            style={{ backgroundColor: '#5F28A5' }}
           >
             View Campaign
           </Link>

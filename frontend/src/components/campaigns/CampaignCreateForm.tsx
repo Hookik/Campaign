@@ -109,7 +109,7 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Campaign</h1>
+      <h1 className="text-3xl font-bold mb-2" style={{ color: '#5F28A5' }}>Create Campaign</h1>
       <p className="text-gray-500 mb-8">Set up a new paid collaboration for creators</p>
 
       {/* Step indicator */}
@@ -119,13 +119,13 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             <button
               onClick={() => i <= currentStepIndex && setStep(s)}
               className={`w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition
-                ${i <= currentStepIndex ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-500'}
+                ${i <= currentStepIndex ? 'btn-primary text-white' : 'bg-gray-200 text-gray-500'}
               `}
             >
               {i + 1}
             </button>
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 ${i < currentStepIndex ? 'bg-purple-600' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 ${i < currentStepIndex ? 'bg-[#5F28A5]' : 'bg-gray-200'}`} />
             )}
           </React.Fragment>
         ))}
@@ -211,7 +211,7 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             </div>
           )}
           <div className="flex items-center gap-3">
-            <input type="checkbox" id="commission_on_top" checked={form.commission_on_top} onChange={e => updateForm('commission_on_top', e.target.checked)} className="w-4 h-4 text-purple-600 rounded" />
+            <input type="checkbox" id="commission_on_top" checked={form.commission_on_top} onChange={e => updateForm('commission_on_top', e.target.checked)} className="w-4 h-4 text-[#5F28A5] rounded" />
             <label htmlFor="commission_on_top" className="text-sm text-gray-700">Also offer affiliate commission on sales</label>
           </div>
           {form.commission_on_top && (
@@ -235,7 +235,7 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             <input type="datetime-local" value={form.content_deadline} onChange={e => updateForm('content_deadline', e.target.value)} className="w-full px-4 py-2.5 border rounded-lg" />
           </div>
           <div className="flex items-center gap-3">
-            <input type="checkbox" checked={form.allow_negotiation} onChange={e => updateForm('allow_negotiation', e.target.checked)} className="w-4 h-4 text-purple-600 rounded" />
+            <input type="checkbox" checked={form.allow_negotiation} onChange={e => updateForm('allow_negotiation', e.target.checked)} className="w-4 h-4 text-[#5F28A5] rounded" />
             <label className="text-sm text-gray-700">Allow creators to propose their own rate</label>
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
               </div>
             </div>
           ))}
-          <button onClick={addDeliverable} className="text-purple-600 text-sm font-semibold hover:underline">+ Add deliverable</button>
+          <button onClick={addDeliverable} className="text-[#5F28A5] text-sm font-semibold hover:underline">+ Add deliverable</button>
         </div>
       )}
 
@@ -275,11 +275,11 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
         <div className="space-y-5">
           <p className="text-sm text-gray-500">Set eligibility requirements for creators</p>
           <div className="flex items-center gap-3">
-            <input type="checkbox" checked={form.require_pro} onChange={e => updateForm('require_pro', e.target.checked)} className="w-4 h-4 text-purple-600 rounded" />
+            <input type="checkbox" checked={form.require_pro} onChange={e => updateForm('require_pro', e.target.checked)} className="w-4 h-4 text-[#5F28A5] rounded" />
             <label className="text-sm text-gray-700">Require Pro subscription</label>
           </div>
           <div className="flex items-center gap-3">
-            <input type="checkbox" checked={form.require_pro_plus} onChange={e => updateForm('require_pro_plus', e.target.checked)} className="w-4 h-4 text-purple-600 rounded" />
+            <input type="checkbox" checked={form.require_pro_plus} onChange={e => updateForm('require_pro_plus', e.target.checked)} className="w-4 h-4 text-[#5F28A5] rounded" />
             <label className="text-sm text-gray-700">Require Pro+ subscription (elite)</label>
           </div>
           {requirements.map((req, i) => (
@@ -298,7 +298,7 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
               )}
             </div>
           ))}
-          <button onClick={addRequirement} className="text-purple-600 text-sm font-semibold hover:underline">+ Add requirement</button>
+          <button onClick={addRequirement} className="text-[#5F28A5] text-sm font-semibold hover:underline">+ Add requirement</button>
         </div>
       )}
 
@@ -343,14 +343,14 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-8 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50"
+            className="px-8 py-2.5 btn-primary text-white rounded-lg font-semibold hover:bg-[#8937CE] disabled:opacity-50"
           >
             {saving ? 'Creating...' : 'Create Campaign'}
           </button>
         ) : (
           <button
             onClick={() => setStep(steps[currentStepIndex + 1])}
-            className="px-6 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+            className="px-6 py-2.5 btn-primary text-white rounded-lg font-semibold hover:bg-[#8937CE]"
           >
             Continue
           </button>

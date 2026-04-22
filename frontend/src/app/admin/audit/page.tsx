@@ -42,7 +42,7 @@ export default function AdminAuditPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Audit Log</h1>
+      <h1 className="text-3xl font-bold mb-8" style={{ color: '#5F28A5' }}>Audit Log</h1>
 
       {/* Filters */}
       <div className="flex gap-4 mb-6">
