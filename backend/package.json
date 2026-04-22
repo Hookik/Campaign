@@ -1,0 +1,29 @@
+{
+  "name": "hookik-upgrade-backend",
+  "version": "1.0.0",
+  "description": "Hookik Platform Upgrade - Paid Campaigns + Creator Subscriptions (Express backend)",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "migrate": "node src/database/migrate.js",
+    "migrate:seed": "node src/database/migrate.js --seed",
+    "test": "jest --passWithNoTests"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
