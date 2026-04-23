@@ -307,4 +307,12 @@ class CampaignService {
       entityType: 'campaign',
       entityId: id,
       action: `campaign.${newStatus}`,
-      oldState: { status: campaign.s
+      oldState: { status: campaign.status },
+      newState: { status: newStatus },
+    });
+
+    return this.getById(id);
+  }
+}
+
+module.exports = new CampaignService();

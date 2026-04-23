@@ -72,25 +72,39 @@ export default function CampaignCard({ campaign, locked = false }: CampaignCardP
         )}
 
         {/* Fee / Budget */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <span className="text-xs text-gray-400 block">Budget</span>
-            <span className="text-lg font-bold text-gray-900">
-              {campaign.fee_per_creator
-                ? formatCurrency(campaign.fee_per_creator)
-                : campaign.total_budget
-                ? formatCurrency(campaign.total_budget)
-                : 'Variable'}
-            </span>
-            {campaign.fee_per_creator && (
-              <span className="text-xs text-gray-400 ml-1">/ creator</span>
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs text-gray-400 block">Campaign Fee</span>
+              <span className="text-lg font-bold text-gray-900">
+                {campaign.fee_per_creator
+                  ? formatCurrency(campaign.fee_per_creator)
+                  : campaign.total_budget
+                  ? formatCurrency(campaign.total_budget)
+                  : 'Variable'}
+              </span>
+              {campaign.fee_per_creator && (
+                <span className="text-xs text-gray-400 ml-1">/ creator</span>
+              )}
+            </div>
+
+            {campaign.commission_on_top && (
+              <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">
+                + {campaign.commission_rate}% commission
+              </span>
             )}
           </div>
 
+          {/* Hybrid earnings callout */}
           {campaign.commission_on_top && (
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-              + {campaign.commission_rate}% commission
-            </span>
+            <div className="mt-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-3 py-2">
+              <p className="text-xs text-green-700 font-medium flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Earn campaign fee + ongoing affiliate sales
+              </p>
+            </div>
           )}
         </div>
 

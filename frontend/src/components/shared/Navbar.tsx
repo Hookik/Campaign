@@ -115,4 +115,67 @@ export default function Navbar() {
                             key={role}
                             onClick={() => handleLogin(role)}
                             disabled={loggingIn}
-                            className="w-full text-left px-4 py-2 text-sm ho
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition"
+                          >
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: roleColors[role] }} />
+                            <span className={`capitalize ${user.role === role ? 'font-bold' : ''}`}>{role}</span>
+                            {user.role === role && <span className="text-xs text-gray-400 ml-auto">current</span>}
+                          </button>
+                        ))}
+                      </div>
+                      <button onClick={() => { logout(); setShowMenu(false); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition">
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button onClick={() => handleLogin('business')} disabled={loggingIn || loading} className="btn-primary btn-sm">
+                  {loggingIn ? 'Signing in...' : 'Dev Login'}
+                </button>
+              )}
+
+              <button onClick={() => setShowMobile(!showMobile)} className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition">
+                {showMobile ? (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {showMobile && (
+          <div className="md:hidden border-t bg-white animate-fadeIn">
+            <div className="container-app py-3 space-y-1">
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href} onClick={() => setShowMobile(false)} className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {user && isCreator && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-40">
+          <div className="flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom)]">
+            {[
+              { href: '/', icon: '🏠', label: 'Home' },
+              { href: '/campaigns', icon: '🔍', label: 'Discover' },
+              { href: '/earnings', icon: '💰', label: 'Earnings' },
+              { href: '/leaderboard', icon: '🏆', label: 'Rank' },
+            ].map(tab => (
+              <Link key={tab.href} href={tab.href} className="flex flex-col items-center gap-0.5 px-3 py-1">
+                <span className="text-lg">{tab.icon}</span>
+                <span className="text-[10px] font-medium text-gray-500">{tab.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

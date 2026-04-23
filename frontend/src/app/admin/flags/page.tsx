@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 import { adminApi } from '@/services/subscriptionService';
 import type { FeatureFlag } from '@/types';
 
@@ -12,11 +13,11 @@ export default function AdminFlagsPage() {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('hookik_token') || '' : '';
+  const { token } = useAuth();
 
   const fetchFlags = async () => {
     try {
-      const res = await adminApi.listFlags(token);
+      const res = await adminApi.listFlags(token || '');
       setFlags(res.data as unknown as FeatureFlag[]);
     } catch (err) {
       console.error(err);
@@ -29,7 +30,7 @@ export default function AdminFlagsPage() {
 
   const handleToggle = async (key: string, currentEnabled: boolean) => {
     try {
-      await adminApi.toggleFlag(key, !currentEnabled, token);
+      await adminApi.toggleFlag(key, !currentEnabled, token || '');
       fetchFlags();
     } catch (err) {
       console.error(err);

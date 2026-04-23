@@ -384,4 +384,276 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             <div>
               <label className="label">Max Creators</label>
               <input type="number" value={form.max_creators} onChange={e => updateForm('max_creators', e.target.value)}
-       
+                className="input" placeholder="e.g. 5" min="1" />
+              <p className="text-xs text-gray-400 mt-1">How many creators can join</p>
+            </div>
+            <div>
+              <label className="label">Application Deadline</label>
+              <input type="date" value={form.application_deadline ? form.application_deadline.split('T')[0] : ''}
+                onChange={e => updateForm('application_deadline', e.target.value ? e.target.value + 'T23:59:00' : '')}
+                min={new Date().toISOString().split('T')[0]}
+                className="input" />
+              <p className="text-xs text-gray-400 mt-1">Leave blank for no deadline</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="label">Content Delivery Deadline</label>
+            <input type="date" value={form.content_deadline ? form.content_deadline.split('T')[0] : ''}
+              onChange={e => updateForm('content_deadline', e.target.value ? e.target.value + 'T23:59:00' : '')}
+              min={new Date().toISOString().split('T')[0]}
+              className="input" />
+            <p className="text-xs text-gray-400 mt-1">When creators should deliver their content</p>
+          </div>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={form.allow_negotiation} onChange={e => updateForm('allow_negotiation', e.target.checked)} className="w-4 h-4 rounded text-purple-600" />
+            <span className="text-sm text-gray-700">Allow creators to propose their own rate</span>
+          </label>
+        </div>
+      )}
+
+      {/* ─── Step: Products (Hybrid Only) ─── */}
+      {step === 'products' && (
+        <div className="space-y-5">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+              <span className="font-semibold text-green-800">Hybrid Earnings Mode</span>
+            </div>
+            <p className="text-sm text-green-700">
+              Select products from your catalog. When a creator is accepted, these products are automatically added
+              to their Hookik storefront. They earn the campaign fee <strong>plus</strong> ongoing {form.commission_rate || '...'}% commission on every sale.
+            </p>
+          </div>
+
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Search your products..." value={productSearch}
+              onChange={(e) => { setProductSearch(e.target.value); fetchProducts(e.target.value); }}
+              className="input pl-10" />
+          </div>
+
+          {selectedProductIds.length > 0 && (
+            <p className="text-sm font-medium" style={{ color: '#5F28A5' }}>
+              {selectedProductIds.length} product{selectedProductIds.length > 1 ? 's' : ''} selected
+            </p>
+          )}
+
+          {loadingProducts ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-24 rounded-lg" />)}
+            </div>
+          ) : availableProducts.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
+              <div className="text-3xl mb-3">📦</div>
+              <p className="font-semibold text-gray-700 mb-1">No products found</p>
+              <p className="text-sm text-gray-500">Add products to your catalog first</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {availableProducts.map((product) => {
+                const selected = selectedProductIds.includes(product.id);
+                return (
+                  <button key={product.id} onClick={() => toggleProduct(product.id)}
+                    className={`card-flat p-3 flex items-center gap-3 text-left transition ${selected ? 'border-purple-400 bg-purple-50' : 'hover:border-gray-300'}`}>
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${selected ? 'bg-purple-600 border-purple-600' : 'border-gray-300'}`}>
+                      {selected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                      {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-sm">📦</div>}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{product.name}</p>
+                      <p className="text-xs text-gray-400">{formatNaira(product.price)}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Step: Deliverables ─── */}
+      {step === 'deliverables' && (
+        <div className="space-y-5">
+          <div>
+            <h3 className="font-semibold mb-1">What should creators deliver?</h3>
+            <p className="text-sm text-gray-500 mb-4">Define the content pieces you need from each creator</p>
+          </div>
+
+          {deliverables.map((del, i) => (
+            <div key={i} className="card-flat p-4 relative">
+              {deliverables.length > 1 && (
+                <button onClick={() => setDeliverables(prev => prev.filter((_, idx) => idx !== i))}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              )}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="label">Title</label>
+                  <input type="text" value={del.title}
+                    onChange={e => setDeliverables(prev => prev.map((d, idx) => idx === i ? { ...d, title: e.target.value } : d))}
+                    className="input" placeholder="e.g. Product Review Reel" />
+                </div>
+                <div>
+                  <label className="label">Content Type</label>
+                  <select value={del.deliverable_type}
+                    onChange={e => setDeliverables(prev => prev.map((d, idx) => idx === i ? { ...d, deliverable_type: e.target.value } : d))}
+                    className="input">
+                    {DELIVERABLE_TYPES.map(dt => (
+                      <option key={dt.value} value={dt.value}>{dt.icon} {dt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="label">Description (optional)</label>
+                  <input type="text" value={del.description}
+                    onChange={e => setDeliverables(prev => prev.map((d, idx) => idx === i ? { ...d, description: e.target.value } : d))}
+                    className="input" placeholder="Brief instructions for the creator" />
+                </div>
+                <div>
+                  <label className="label">Quantity</label>
+                  <input type="number" value={del.quantity} min={1}
+                    onChange={e => setDeliverables(prev => prev.map((d, idx) => idx === i ? { ...d, quantity: parseInt(e.target.value) || 1 } : d))}
+                    className="input" />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button onClick={() => setDeliverables(prev => [...prev, { title: '', description: '', deliverable_type: 'instagram_post', quantity: 1 }])}
+            className="btn-outline w-full">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Another Deliverable
+          </button>
+        </div>
+      )}
+
+      {/* ─── Step: Requirements (Targeting) ─── */}
+      {step === 'requirements' && (
+        <div className="space-y-5">
+          <div>
+            <h3 className="font-semibold mb-1">Who should apply?</h3>
+            <p className="text-sm text-gray-500 mb-4">Set requirements to attract the right creators for your campaign</p>
+          </div>
+
+          {/* Creator Requirements */}
+          {requirements.map((req, i) => {
+            const typeInfo = REQUIREMENT_TYPES.find(rt => rt.value === req.req_type) || REQUIREMENT_TYPES[0];
+            return (
+              <div key={i} className="card-flat p-4 relative">
+                {requirements.length > 1 && (
+                  <button onClick={() => setRequirements(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  <div>
+                    <label className="label">Requirement Type</label>
+                    <select value={req.req_type}
+                      onChange={e => setRequirements(prev => prev.map((r, idx) => idx === i ? { ...r, req_type: e.target.value } : r))}
+                      className="input">
+                      {REQUIREMENT_TYPES.map(rt => (
+                        <option key={rt.value} value={rt.value}>{rt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">{typeInfo.label} Value</label>
+                    <input type="text" value={req.req_value}
+                      onChange={e => setRequirements(prev => prev.map((r, idx) => idx === i ? { ...r, req_value: e.target.value } : r))}
+                      className="input" placeholder={typeInfo.placeholder} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400">{typeInfo.hint}</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={req.is_required}
+                      onChange={e => setRequirements(prev => prev.map((r, idx) => idx === i ? { ...r, is_required: e.target.checked } : r))}
+                      className="w-3.5 h-3.5 rounded text-purple-600" />
+                    <span className="text-xs font-medium text-gray-500">Required</span>
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+
+          <button onClick={() => setRequirements(prev => [...prev, { req_type: 'niche', req_value: '', is_required: true }])}
+            className="btn-outline w-full">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Requirement
+          </button>
+        </div>
+      )}
+
+      {/* ─── Step: Review ─── */}
+      {step === 'review' && (
+        <div className="space-y-4">
+          <div className="card-flat p-6">
+            <h2 className="text-xl font-bold mb-1">{form.title || 'Untitled Campaign'}</h2>
+            <p className="text-gray-500 text-sm mb-4">{form.brief || 'No brief provided'}</p>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="text-sm"><span className="text-gray-500">Type:</span> <strong className="capitalize">{form.campaign_type.replace(/_/g, ' ')}</strong></div>
+              <div className="text-sm"><span className="text-gray-500">Visibility:</span> <strong className="capitalize">{form.visibility}</strong></div>
+              <div className="text-sm"><span className="text-gray-500">Budget:</span> <strong>{form.fee_per_creator ? formatNaira(parseFloat(form.fee_per_creator)) : form.fee_min ? `${formatNaira(parseFloat(form.fee_min))} - ${formatNaira(parseFloat(form.fee_max || '0'))}` : form.total_budget ? formatNaira(parseFloat(form.total_budget)) : '—'}</strong></div>
+              <div className="text-sm"><span className="text-gray-500">Max Creators:</span> <strong>{form.max_creators || '—'}</strong></div>
+            </div>
+
+            {isHybrid && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  <span className="font-semibold text-green-800 text-sm">Hybrid Campaign</span>
+                </div>
+                <p className="text-sm text-green-700 mt-1">
+                  Creators earn campaign fee + {form.commission_rate || '0'}% ongoing affiliate commission on {selectedProductIds.length} linked product{selectedProductIds.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
+
+            {deliverables.filter(d => d.title.trim()).length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm text-gray-500 mb-2">Deliverables:</p>
+                {deliverables.filter(d => d.title.trim()).map((d, i) => (
+                  <p key={i} className="text-sm">{getPlatformIcon(d.deliverable_type)} {d.quantity}x {d.title}</p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-red-500 bg-red-50 p-3 rounded-lg">{error}</p>}
+        </div>
+      )}
+
+      {/* ─── Navigation ─── */}
+      <div className="flex items-center justify-between mt-8 pt-6 border-t">
+        <button
+          onClick={() => currentStepIndex > 0 && setStep(steps[currentStepIndex - 1])}
+          disabled={currentStepIndex === 0}
+          className={`btn-outline ${currentStepIndex === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
+        >
+          Back
+        </button>
+
+        {step === 'review' ? (
+          <button onClick={handleSubmit} disabled={saving} className="btn-primary btn-lg">
+            {saving ? 'Creating...' : 'Create Campaign'}
+          </button>
+        ) : (
+          <button onClick={() => setStep(steps[currentStepIndex + 1])} className="btn-primary">
+            Continue
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

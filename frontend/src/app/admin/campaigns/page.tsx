@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 import StatusBadge from '@/components/shared/StatusBadge';
 import { adminApi } from '@/services/subscriptionService';
 
@@ -15,14 +16,14 @@ export default function AdminCampaignsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('hookik_token') || '' : '';
+  const { token } = useAuth();
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [campRes, statsRes] = await Promise.all([
-        adminApi.listCampaigns(token, { status: statusFilter || undefined }),
-        adminApi.campaignStats(token),
+        adminApi.listCampaigns(token || '', { status: statusFilter || undefined }),
+        adminApi.campaignStats(token || ''),
       ]);
       setCampaigns((campRes.data as any).campaigns || []);
       setStats(statsRes.data);
@@ -38,7 +39,7 @@ export default function AdminCampaignsPage() {
   const handleModerate = async (id: string, status: string) => {
     if (!confirm(`Are you sure you want to change this campaign to "${status}"?`)) return;
     try {
-      await adminApi.moderateCampaign(id, status, 'Admin action', token);
+      await adminApi.moderateCampaign(id, status, 'Admin action', token || '');
       fetchData();
     } catch (err) {
       console.error(err);

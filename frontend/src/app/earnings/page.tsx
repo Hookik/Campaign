@@ -188,4 +188,124 @@ export default function EarningsPage() {
                 </div>
               </div>
               <div className="flex-1 space-y-2">
-                <d
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#5F28A5' }} />
+                    <span className="text-sm text-gray-600">Campaign Fees</span>
+                  </div>
+                  <span className="text-sm font-semibold">{formatNaira(totalFees)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#1B8E47' }} />
+                    <span className="text-sm text-gray-600">Commissions</span>
+                  </div>
+                  <span className="text-sm font-semibold">{formatNaira(totalCommissions)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-50 border border-green-100 rounded-lg p-3">
+              <p className="text-xs text-green-700">
+                Commission earnings are growing — they&apos;re now <strong>{Math.round(totalCommissions / totalEarned * 100)}%</strong> of your total. Keep sharing your storefront link!
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="card-flat p-4 space-y-2">
+            <Link href="/campaigns" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
+              <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: '#F5F0FF' }}>🔍</span>
+              <span className="text-sm font-medium">Find new campaigns</span>
+              <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+            <Link href="/subscriptions" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
+              <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: '#F0FDF4' }}>⭐</span>
+              <span className="text-sm font-medium">Upgrade for higher commissions</span>
+              <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Payout History ─── */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-lg">Payout History</h2>
+          <div className="flex gap-2">
+            {(['all', 'paid', 'pending'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setPayoutFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  payoutFilter === f ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border hover:border-purple-200'
+                }`}
+              >
+                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="card-flat overflow-hidden">
+          <div className="divide-y">
+            {filteredPayouts.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 text-sm">No payouts found</div>
+            ) : (
+              filteredPayouts.map((p) => (
+                <div key={p.id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${p.payout_type === 'commission' ? 'bg-green-50' : 'bg-purple-50'}`}>
+                    {p.payout_type === 'commission' ? '📈' : '💵'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{p.campaign_title}</p>
+                    <p className="text-xs text-gray-400 capitalize">{p.payout_type.replace(/_/g, ' ')}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-sm" style={{ color: p.payout_type === 'commission' ? '#1B8E47' : '#5F28A5' }}>
+                      {formatNaira(p.amount)}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {p.paid_at ? getTimeAgo(p.paid_at) : '—'}
+                    </p>
+                  </div>
+                  <span className={`status-${p.status} badge text-xs`}>{p.status}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stat Card ───
+function StatCard({ label, value, subtext, color, bg, icon }: { label: string; value: string; subtext: string; color: string; bg: string; icon: string }) {
+  return (
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-gray-500">{label}</span>
+        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: bg }}>{icon}</span>
+      </div>
+      <p className="text-xl font-bold" style={{ color }}>{value}</p>
+      <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>
+    </div>
+  );
+}
+
+// ─── Rounded rect helper for canvas ───
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  if (h <= 0) return;
+  r = Math.min(r, h / 2, w / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}

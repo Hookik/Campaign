@@ -177,4 +177,4 @@ class AdminSubscriptionController {
   }
 }
 
-module.exports = new AdminSubs
+module.exports = new AdminSubscriptionController();

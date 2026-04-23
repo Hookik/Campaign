@@ -50,4 +50,84 @@ function validateCreateCampaign(req, res, next) {
     return next(ApiError.badRequest('commission_rate must be between 0 and 100'));
   }
 
-  // Deadline validat
+  // Deadline validation — skip if null, undefined, or empty string
+  if (application_deadline && application_deadline !== '' && application_deadline !== null) {
+    const deadline = new Date(application_deadline);
+    if (isNaN(deadline.getTime())) {
+      return next(ApiError.badRequest('application_deadline must be a valid date'));
+    }
+    // Only enforce future check for new campaigns (not updates)
+    if (deadline.getTime() < Date.now() && !req.params?.id) {
+      return next(ApiError.badRequest('application_deadline must be in the future'));
+    }
+  }
+
+  // Description length
+  if (req.body.description && req.body.description.length > 10000) {
+    return next(ApiError.badRequest('Description must be under 10,000 characters'));
+  }
+
+  next();
+}
+
+function validateApplication(req, res, next) {
+  const { pitch } = req.body;
+
+  if (!pitch || pitch.trim().length < 10) {
+    return next(ApiError.badRequest('Pitch is required (minimum 10 characters)'));
+  }
+  if (pitch.trim().length > 5000) {
+    return next(ApiError.badRequest('Pitch must be under 5,000 characters'));
+  }
+
+  next();
+}
+
+function validateStatusTransition(req, res, next) {
+  const { status } = req.body;
+
+  if (!status) {
+    return next(ApiError.badRequest('Status is required'));
+  }
+
+  const validStatuses = [
+    'draft', 'published', 'accepting', 'reviewing',
+    'in_progress', 'completed', 'cancelled', 'expired', 'archived',
+  ];
+
+  if (!validStatuses.includes(status)) {
+    return next(ApiError.badRequest(`Invalid status: ${status}`));
+  }
+
+  next();
+}
+
+function validateApplicationStatus(req, res, next) {
+  const { status } = req.body;
+  const valid = ['shortlisted', 'accepted', 'rejected'];
+
+  if (!status || !valid.includes(status)) {
+    return next(ApiError.badRequest(`Status must be one of: ${valid.join(', ')}`));
+  }
+
+  next();
+}
+
+function validateSubmissionReview(req, res, next) {
+  const { action } = req.body;
+  const valid = ['approve', 'request_revision', 'reject'];
+
+  if (!action || !valid.includes(action)) {
+    return next(ApiError.badRequest(`Action must be one of: ${valid.join(', ')}`));
+  }
+
+  next();
+}
+
+module.exports = {
+  validateCreateCampaign,
+  validateApplication,
+  validateStatusTransition,
+  validateApplicationStatus,
+  validateSubmissionReview,
+};

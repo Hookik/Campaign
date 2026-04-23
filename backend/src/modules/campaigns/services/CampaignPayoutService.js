@@ -173,4 +173,21 @@ class CampaignPayoutService {
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as total_earned,
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as total_pending,
          SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_approved,
-         SUM(CASE WHEN status = 'paid' AND payout_type = 'fixed_fee' THEN amount ELSE 0 END) as campaign_fees_ea
+         SUM(CASE WHEN status = 'paid' AND payout_type = 'fixed_fee' THEN amount ELSE 0 END) as campaign_fees_earned,
+         SUM(CASE WHEN status = 'paid' AND payout_type = 'commission' THEN amount ELSE 0 END) as affiliate_commissions_earned,
+         SUM(CASE WHEN status IN ('pending','approved') AND payout_type = 'fixed_fee' THEN amount ELSE 0 END) as campaign_fees_pending,
+         SUM(CASE WHEN status IN ('pending','approved') AND payout_type = 'commission' THEN amount ELSE 0 END) as affiliate_commissions_pending
+       FROM campaign_payouts WHERE creator_id = ?`,
+      [creatorId]
+    );
+
+    return {
+      payouts: rows,
+      summary: totals[0],
+      page,
+      limit,
+    };
+  }
+}
+
+module.exports = new CampaignPayoutService();

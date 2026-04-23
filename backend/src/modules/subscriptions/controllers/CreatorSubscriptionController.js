@@ -99,13 +99,24 @@ class CreatorSubscriptionController {
    */
   async handleWebhook(req, res, next) {
     try {
-      // Verify webhook signature
+      // Verify webhook signature — reject if header missing or invalid
+      const signature = req.headers['x-paystack-signature'];
+      if (!signature) {
+        return res.status(401).json({ error: 'Missing webhook signature' });
+      }
+
+      const secretKey = process.env.PAYSTACK_SECRET_KEY;
+      if (!secretKey) {
+        console.error('[WEBHOOK] PAYSTACK_SECRET_KEY not configured');
+        return res.status(500).json({ error: 'Webhook not configured' });
+      }
+
       const hash = crypto
-        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
+        .createHmac('sha512', secretKey)
         .update(JSON.stringify(req.body))
         .digest('hex');
 
-      if (hash !== req.headers['x-paystack-signature']) {
+      if (hash !== signature) {
         return res.status(401).json({ error: 'Invalid signature' });
       }
 

@@ -100,4 +100,19 @@ class ApplicationService {
       }
       if (added > 0) {
         await auditService.log({ actorId: crId, actorType: 'system', entityType: 'storefront', entityId: crId, action: 'storefront.products_auto_added', newState: { campaign_id: cId, products_added: added, commission_rate: rate } });
-        console.log('[HYBRID] Auto-added ' + added + ' product
+        console.log('[HYBRID] Auto-added ' + added + ' products for creator ' + crId);
+      }
+    } catch (err) { console.error('[HYBRID] storefront error:', err.message); }
+  }
+
+  async withdraw(applicationId, creatorId) {
+    const app = await this.getById(applicationId);
+    if (!app) throw ApiError.notFound('Application not found');
+    if (app.creator_id !== creatorId) throw ApiError.forbidden();
+    if (!['applied','shortlisted'].includes(app.status)) throw ApiError.badRequest('Cannot withdraw at this stage');
+    await pool.execute("UPDATE campaign_applications SET status = 'withdrawn' WHERE id = ?", [applicationId]);
+    return this.getById(applicationId);
+  }
+}
+
+module.exports = new ApplicationService();

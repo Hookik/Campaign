@@ -258,4 +258,88 @@ export default function CampaignDetail({ campaignId, token }: CampaignDetailProp
           </div>
 
           {/* Campaign Meta */}
-          <div className="card-flat p-4 s
+          <div className="card-flat p-4 space-y-3">
+            {campaign.max_creators && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Spots</span>
+                <span className="font-medium">{campaign.spots_remaining ?? campaign.max_creators} / {campaign.max_creators}</span>
+              </div>
+            )}
+            {campaign.application_count != null && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Applications</span>
+                <span className="font-medium">{campaign.application_count}</span>
+              </div>
+            )}
+            {campaign.application_deadline && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Deadline</span>
+                <span className={`font-medium ${getDaysLeft(campaign.application_deadline) === 'Closed' ? 'text-red-500' : 'text-orange-500'}`}>
+                  {getDaysLeft(campaign.application_deadline)}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Type</span>
+              <span className="font-medium">{campaign.campaign_type?.replace(/_/g, ' ')}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Visibility</span>
+              <span className="font-medium capitalize">{campaign.visibility}</span>
+            </div>
+          </div>
+
+          {/* Tags */}
+          {campaign.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {campaign.tags.map((tag: string) => (
+                <span key={tag} className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">#{tag}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── Apply Modal ─── */}
+      {showApply && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowApply(false)}>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">Apply to {campaign.title}</h3>
+              <button onClick={() => setShowApply(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="bg-purple-50 rounded-lg p-3 mb-4">
+              <p className="text-sm text-purple-700">
+                <strong>Tip:</strong> Brands love creators who explain WHY they&apos;re a great fit — mention your niche, audience, and content style.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="label">Your Pitch *</label>
+              <textarea
+                value={pitch}
+                onChange={e => setPitch(e.target.value)}
+                rows={5}
+                className="input"
+                placeholder="Tell the brand why you're perfect for this campaign. What makes your audience unique? What content ideas do you have?"
+              />
+              <p className="text-xs text-gray-400 mt-1">{pitch.length}/500 characters</p>
+            </div>
+
+            {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+
+            <div className="flex gap-3">
+              <button onClick={() => setShowApply(false)} className="btn-outline flex-1">Cancel</button>
+              <button onClick={handleApply} disabled={applying} className="btn-primary flex-1">
+                {applying ? 'Submitting...' : 'Submit Application'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

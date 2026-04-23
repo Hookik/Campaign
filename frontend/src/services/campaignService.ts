@@ -47,6 +47,9 @@ export const brandCampaignApi = {
 
   listPayouts: (campaignId: string, token: string) =>
     api.get<ApiResponse<CampaignPayout[]>>(`/campaigns/${campaignId}/payouts`, token),
+
+  listProducts: (token: string, params?: { search?: string }) =>
+    api.get<ApiResponse<{ products: { id: string; name: string; price: number; currency: string; image_url: string }[] }>>('/campaigns/products', token, params),
 };
 
 // ─── Creator Campaign API ───

@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 import { adminApi } from '@/services/subscriptionService';
 import type { AuditEvent } from '@/types';
 
@@ -17,12 +18,12 @@ export default function AdminAuditPage() {
   const [offset, setOffset] = useState(0);
   const limit = 30;
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('hookik_token') || '' : '';
+  const { token } = useAuth();
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await adminApi.auditLog(token, {
+      const res = await adminApi.auditLog(token || '', {
         entity_type: entityFilter || undefined,
         action: actionFilter || undefined,
         limit,

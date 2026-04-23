@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 import StatusBadge from '@/components/shared/StatusBadge';
 import { adminApi } from '@/services/subscriptionService';
 
@@ -16,14 +17,14 @@ export default function AdminSubscriptionsPage() {
   const [compForm, setCompForm] = useState({ creator_id: '', plan: 'pro' });
   const [showComp, setShowComp] = useState(false);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('hookik_token') || '' : '';
+  const { token } = useAuth();
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [subRes, statsRes] = await Promise.all([
-        adminApi.listSubscriptions(token),
-        adminApi.subscriptionStats(token),
+        adminApi.listSubscriptions(token || ''),
+        adminApi.subscriptionStats(token || ''),
       ]);
       setSubscriptions((subRes.data as any).subscriptions || []);
       setStats(statsRes.data);
@@ -38,7 +39,7 @@ export default function AdminSubscriptionsPage() {
 
   const handleComp = async () => {
     try {
-      await adminApi.compSubscription(compForm.creator_id, compForm.plan, token);
+      await adminApi.compSubscription(compForm.creator_id, compForm.plan, token || '');
       setShowComp(false);
       setCompForm({ creator_id: '', plan: 'pro' });
       fetchData();

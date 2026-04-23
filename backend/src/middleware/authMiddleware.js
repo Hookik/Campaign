@@ -71,4 +71,10 @@ function requireBusiness(req, res, next) {
  * Require creator role
  */
 function requireCreator(req, res, next) {
-  if (req.user?.role !== 'creator' && req.user?.role 
+  if (req.user?.role !== 'creator' && req.user?.role !== 'admin') {
+    return next(ApiError.forbidden('Creator access required'));
+  }
+  next();
+}
+
+module.exports = { requireAuth, requireAdmin, requireBusiness, requireCreator };

@@ -155,6 +155,10 @@ export interface EarningsSummary {
   total_earned: number;
   total_pending: number;
   total_approved: number;
+  campaign_fees_earned: number;
+  affiliate_commissions_earned: number;
+  campaign_fees_pending: number;
+  affiliate_commissions_pending: number;
 }
 
 // ─── Subscriptions ───

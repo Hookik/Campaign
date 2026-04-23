@@ -127,4 +127,4 @@ class AdminCampaignController {
   }
 }
 
-module.exports = new Admin
+module.exports = new AdminCampaignController();

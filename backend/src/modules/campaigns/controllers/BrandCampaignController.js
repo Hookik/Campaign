@@ -7,6 +7,7 @@ const campaignService = require('../services/CampaignService');
 const applicationService = require('../services/ApplicationService');
 const deliverableService = require('../services/DeliverableService');
 const payoutService = require('../services/CampaignPayoutService');
+const { pool } = require('../../../config/database');
 
 class BrandCampaignController {
   /**
@@ -190,6 +191,33 @@ class BrandCampaignController {
     try {
       const payouts = await payoutService.listByCampaign(req.params.id);
       res.json({ success: true, data: payouts });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * GET /api/campaigns/products
+   * List products belonging to the authenticated business.
+   * Used by the campaign create form for the product picker (hybrid mode).
+   */
+  async listProducts(req, res, next) {
+    try {
+      const businessId = req.user.businessId;
+      const { search } = req.query;
+
+      let sql = 'SELECT id, name, price, currency, image_url FROM products WHERE business_id = ? AND status = ?';
+      const params = [businessId, 'active'];
+
+      if (search) {
+        sql += ' AND name LIKE ?';
+        params.push(`%${search}%`);
+      }
+
+      sql += ' ORDER BY name ASC LIMIT 50';
+
+      const [rows] = await pool.execute(sql, params);
+      res.json({ success: true, data: { products: rows } });
     } catch (err) {
       next(err);
     }

@@ -20,6 +20,7 @@ router.use(featureGate('paid_campaigns'));
 // Campaign CRUD
 router.post('/', validateCreateCampaign, controller.create.bind(controller));
 router.get('/mine', controller.listMine.bind(controller));
+router.get('/products', controller.listProducts.bind(controller));
 router.get('/:id', controller.getById.bind(controller));
 router.put('/:id', controller.update.bind(controller));
 
