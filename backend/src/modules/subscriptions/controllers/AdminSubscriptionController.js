@@ -30,10 +30,11 @@ class AdminSubscriptionController {
       if (status) { sql += ' AND cs.status = ?'; params.push(status); }
       if (plan) { sql += ' AND sp.slug = ?'; params.push(plan); }
 
-      sql += ' ORDER BY cs.created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
+      const lim = parseInt(limit) || 20;
+      const pg = parseInt(page) || 1;
+      sql += ` ORDER BY cs.created_at DESC LIMIT ${lim} OFFSET ${(pg - 1) * lim}`;
 
-      const [rows] = await pool.execute(sql, params);
+      const [rows] = await pool.query(sql, params);
 
       // Counts
       const [counts] = await pool.execute(
@@ -176,4 +177,4 @@ class AdminSubscriptionController {
   }
 }
 
-module.exports = new AdminSubscriptionController();
+module.exports = new AdminSubs

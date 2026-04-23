@@ -58,10 +58,9 @@ class AuditService {
       params.push(`%${action}%`);
     }
 
-    sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    sql += ` ORDER BY created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
 
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.query(sql, params);
 
     // Get total count
     let countSql = 'SELECT COUNT(*) as total FROM audit_events WHERE 1=1';

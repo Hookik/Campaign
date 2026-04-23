@@ -148,6 +148,8 @@ class CampaignPayoutService {
    * List payouts for a creator (earnings)
    */
   async listByCreator(creatorId, { status, page = 1, limit = 20 }) {
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
     let sql = `
       SELECT cp.*, c.title as campaign_title
       FROM campaign_payouts cp
@@ -161,28 +163,14 @@ class CampaignPayoutService {
       params.push(status);
     }
 
-    sql += ' ORDER BY cp.created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, (page - 1) * limit);
+    sql += ` ORDER BY cp.created_at DESC LIMIT ${limit} OFFSET ${(page - 1) * limit}`;
 
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.query(sql, params);
 
-    // Totals
+    // Totals — overall + split by payout type (campaign fees vs affiliate commission)
     const [totals] = await pool.execute(
       `SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as total_earned,
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as total_pending,
-         SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_approved
-       FROM campaign_payouts WHERE creator_id = ?`,
-      [creatorId]
-    );
-
-    return {
-      payouts: rows,
-      summary: totals[0],
-      page,
-      limit,
-    };
-  }
-}
-
-module.exports = new CampaignPayoutService();
+         SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_approved,
+         SUM(CASE WHEN status = 'paid' AND payout_type = 'fixed_fee' THEN amount ELSE 0 END) as campaign_fees_ea

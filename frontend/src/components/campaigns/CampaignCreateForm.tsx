@@ -236,25 +236,63 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             </div>
           </div>
 
-          {/* Cover Image Upload Area */}
+          {/* Cover Image Upload */}
           <div>
             <label className="label">Cover Image</label>
-            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 transition cursor-pointer relative"
-              onClick={() => {
-                const url = prompt('Paste the image URL for your campaign cover:');
-                if (url) { updateForm('cover_image_url', url); setCoverPreview(url); }
-              }}>
+            <div
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer relative ${coverPreview ? 'border-purple-300 bg-purple-50/30' : 'border-gray-200 hover:border-purple-300'}`}
+              onClick={() => document.getElementById('cover-upload')?.click()}
+              onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-purple-400', 'bg-purple-50'); }}
+              onDragLeave={(e) => { e.currentTarget.classList.remove('border-purple-400', 'bg-purple-50'); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.currentTarget.classList.remove('border-purple-400', 'bg-purple-50');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const dataUrl = ev.target?.result as string;
+                    setCoverPreview(dataUrl);
+                    updateForm('cover_image_url', dataUrl);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            >
+              <input
+                id="cover-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      const dataUrl = ev.target?.result as string;
+                      setCoverPreview(dataUrl);
+                      updateForm('cover_image_url', dataUrl);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
               {coverPreview ? (
                 <div className="relative">
-                  <img src={coverPreview} alt="Cover preview" className="w-full h-32 object-cover rounded-lg" onError={() => setCoverPreview('')} />
+                  <img src={coverPreview} alt="Cover preview" className="w-full h-40 object-cover rounded-lg" />
                   <button onClick={(e) => { e.stopPropagation(); updateForm('cover_image_url', ''); setCoverPreview(''); }}
-                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">✕</button>
+                    className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-md hover:bg-red-600 transition">✕</button>
+                  <p className="text-xs text-gray-400 mt-2">Click or drag to replace</p>
                 </div>
               ) : (
                 <>
-                  <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-xl mx-auto mb-3">🖼️</div>
-                  <p className="text-sm font-medium text-gray-700">Click to add a cover image</p>
-                  <p className="text-xs text-gray-400 mt-1">Paste an image URL — recommended 1200×600px</p>
+                  <div className="w-14 h-14 rounded-xl bg-purple-50 flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-7 h-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP up to 5MB — recommended 1200×600px</p>
                 </>
               )}
             </div>
@@ -346,38 +384,4 @@ export default function CampaignCreateForm({ token }: CampaignCreateFormProps) {
             <div>
               <label className="label">Max Creators</label>
               <input type="number" value={form.max_creators} onChange={e => updateForm('max_creators', e.target.value)}
-                className="input" placeholder="e.g. 5" min="1" />
-              <p className="text-xs text-gray-400 mt-1">How many creators can join</p>
-            </div>
-            <div>
-              <label className="label">Application Deadline</label>
-              <input type="date" value={form.application_deadline ? form.application_deadline.split('T')[0] : ''}
-                onChange={e => updateForm('application_deadline', e.target.value ? e.target.value + 'T23:59:00' : '')}
-                min={new Date().toISOString().split('T')[0]}
-                className="input" />
-              <p className="text-xs text-gray-400 mt-1">Leave blank for no deadline</p>
-            </div>
-          </div>
-
-          <div>
-            <label className="label">Content Delivery Deadline</label>
-            <input type="date" value={form.content_deadline ? form.content_deadline.split('T')[0] : ''}
-              onChange={e => updateForm('content_deadline', e.target.value ? e.target.value + 'T23:59:00' : '')}
-              min={new Date().toISOString().split('T')[0]}
-              className="input" />
-            <p className="text-xs text-gray-400 mt-1">When creators should deliver their content</p>
-          </div>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={form.allow_negotiation} onChange={e => updateForm('allow_negotiation', e.target.checked)} className="w-4 h-4 rounded text-purple-600" />
-            <span className="text-sm text-gray-700">Allow creators to propose their own rate</span>
-          </label>
-        </div>
-      )}
-
-      {/* ─── Step: Products (Hybrid Only) ─── */}
-      {step === 'products' && (
-        <div className="space-y-5">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentC
+       

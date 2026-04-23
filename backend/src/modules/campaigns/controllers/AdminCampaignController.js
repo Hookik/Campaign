@@ -29,10 +29,11 @@ class AdminCampaignController {
       if (status) { sql += ' AND c.status = ?'; params.push(status); }
       if (business_id) { sql += ' AND c.business_id = ?'; params.push(business_id); }
 
-      sql += ' ORDER BY c.created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), (parseInt(page) - 1) * parseInt(limit));
+      const lim = parseInt(limit) || 20;
+      const pg = parseInt(page) || 1;
+      sql += ` ORDER BY c.created_at DESC LIMIT ${lim} OFFSET ${(pg - 1) * lim}`;
 
-      const [rows] = await pool.execute(sql, params);
+      const [rows] = await pool.query(sql, params);
       res.json({ success: true, data: { campaigns: rows, page: parseInt(page), limit: parseInt(limit) } });
     } catch (err) {
       next(err);
@@ -126,4 +127,4 @@ class AdminCampaignController {
   }
 }
 
-module.exports = new AdminCampaignController();
+module.exports = new Admin
