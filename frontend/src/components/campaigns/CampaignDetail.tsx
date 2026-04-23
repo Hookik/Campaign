@@ -60,7 +60,14 @@ export default function CampaignDetail({ campaignId, token }: CampaignDetailProp
       setApplied(true);
       setShowApply(false);
     } catch (err: any) {
-      setError(err.data?.error || err.message || 'Failed to apply');
+      const msg = err.data?.error || err.message || 'Failed to apply';
+      // If already applied, show success state instead of error
+      if (msg.toLowerCase().includes('already applied')) {
+        setApplied(true);
+        setShowApply(false);
+      } else {
+        setError(msg);
+      }
     } finally {
       setApplying(false);
     }
@@ -251,8 +258,4 @@ export default function CampaignDetail({ campaignId, token }: CampaignDetailProp
           </div>
 
           {/* Campaign Meta */}
-          <div className="card-flat p-4 space-y-3">
-            {campaign.max_creators && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Spots</span>
-                <span className="font-med
+          <div className="card-flat p-4 s
