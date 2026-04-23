@@ -1,44 +1,54 @@
 /**
  * Hookik Landing Page
- * The first impression — tells the story of Nigeria's creator economy platform.
- * Two audiences: Brands looking for creators, Creators looking for opportunities.
+ * Patreon-inspired design with bold typography, creator grid,
+ * and collaboration-focused copy. Hookik brand colors.
  */
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  DEMO_CAMPAIGNS, DEMO_CREATORS, PLATFORM_STATS, TESTIMONIALS,
-  formatNaira, formatCompact, formatFollowers, getNicheIcon, getPlatformIcon,
+  DEMO_CREATORS, DEMO_CAMPAIGNS, PLATFORM_STATS, TESTIMONIALS,
+  formatNaira, formatCompact, formatFollowers, getNicheIcon,
 } from '@/lib/demoData';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'creators' | 'brands'>('creators');
-
-  const featuredCampaigns = DEMO_CAMPAIGNS.filter(c => c.status === 'published').slice(0, 3);
-  const topCreators = DEMO_CREATORS.slice(0, 4);
+  const creators = DEMO_CREATORS.slice(0, 6);
+  const campaigns = DEMO_CAMPAIGNS.filter(c => c.status === 'published').slice(0, 3);
 
   return (
     <div className="min-h-screen">
-      {/* ─── HERO ─── */}
-      <section className="gradient-hero relative overflow-hidden">
-        <div className="container-app py-16 md:py-24">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-purple-100 text-sm font-medium text-purple-700 mb-6 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-soft"></span>
-              Nigeria&apos;s #1 Creator Collaboration Platform
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6" style={{ color: '#1A1D23' }}>
-              Earn <span style={{ color: '#5F28A5' }}>Campaign Fees</span> +{' '}
-              <span style={{ color: '#1B8E47' }}>Ongoing Commission</span>
+
+      {/* ─── HERO: Bold Typography + Creator Grid ─── */}
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #F5F0FF 0%, #EDE5FF 40%, #E8DEFF 100%)' }}>
+        <div className="container-app pt-16 pb-8 md:pt-24 md:pb-12">
+          {/* Large bold headline */}
+          <div className="text-center max-w-4xl mx-auto mb-12">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9] mb-6" style={{ color: '#1A1D23' }}>
+              Collaborate.<br />
+              <span style={{ color: '#5F28A5' }}>Create.</span><br />
+              <span style={{ color: '#1B8E47' }}>Earn.</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              The only platform where creators earn upfront campaign fees AND ongoing affiliate commission on every sale.
-              Brands get authentic content that actually drives revenue.
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+              Hookik connects Nigerian brands with creators for authentic collaborations.
+              Get paid for campaigns <em>and</em> earn ongoing commission on every sale.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/campaigns" className="btn-primary btn-lg">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z
+              <Link href="/campaigns" className="btn-primary btn-lg text-base px-10">
+                Start Collaborating
+              </Link>
+              <Link href="/campaigns/create" className="btn-secondary btn-lg text-base px-10">
+                Launch a Campaign
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Creator Photo Grid — Patreon style */}
+        <div className="relative w-full overflow-hidden pb-16">
+          <div className="flex items-end justify-center gap-4 px-4 max-w-6xl mx-auto">
+            {creators.map((creator, i) => {
+              const heights = [2
