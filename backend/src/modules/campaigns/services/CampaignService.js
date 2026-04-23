@@ -132,6 +132,9 @@ class CampaignService {
    * List campaigns with filters (for brand)
    */
   async listByBusiness(businessId, { status, page = 1, limit = 20 }) {
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
     let sql = 'SELECT * FROM campaigns WHERE business_id = ?';
     const params = [businessId];
 
@@ -140,10 +143,9 @@ class CampaignService {
       params.push(status);
     }
 
-    sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, (page - 1) * limit);
+    sql += ` ORDER BY created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt((page - 1) * limit)}`;
 
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.query(sql, params);
 
     // Count
     let countSql = 'SELECT COUNT(*) as total FROM campaigns WHERE business_id = ?';
@@ -158,6 +160,9 @@ class CampaignService {
    * List campaigns visible to a creator (public browse)
    */
   async listForCreator(creatorId, { page = 1, limit = 20, search, campaign_type }) {
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 20;
+
     let sql = `
       SELECT c.*, b.name as business_name
       FROM campaigns c
@@ -176,10 +181,9 @@ class CampaignService {
       params.push(campaign_type);
     }
 
-    sql += ' ORDER BY c.published_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, (page - 1) * limit);
+    sql += ` ORDER BY c.published_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt((page - 1) * limit)}`;
 
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.query(sql, params);
 
     return { campaigns: rows, page, limit };
   }
@@ -303,12 +307,4 @@ class CampaignService {
       entityType: 'campaign',
       entityId: id,
       action: `campaign.${newStatus}`,
-      oldState: { status: campaign.status },
-      newState: { status: newStatus },
-    });
-
-    return this.getById(id);
-  }
-}
-
-module.exports = new CampaignService();
+      oldState: { status: campaign.s
