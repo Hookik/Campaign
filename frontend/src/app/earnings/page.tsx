@@ -1,175 +1,191 @@
-"use client";
+/**
+ * Earnings Dashboard
+ * Creator's financial hub — chart visualization, breakdown, payout history
+ * Shows the hybrid model value: campaign fees vs affiliate commissions
+ */
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { creatorCampaignApi } from "@/services/campaignService";
-import type { CampaignPayout, EarningsSummary } from "@/types";
+'use client';
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "#EAB308",
-  approved: "#228BE6",
-  processing: "#8937CE",
-  paid: "#1B8E47",
-  failed: "#EF4444",
-  reversed: "#EF4444",
-};
-
-function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <p className="text-sm text-gray-500 mb-1">{label}</p>
-      <p className="text-3xl font-bold" style={{ color }}>{value}</p>
-    </div>
-  );
-}
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { creatorCampaignApi } from '@/services/campaignService';
+import {
+  DEMO_EARNINGS_CHART, DEMO_PAYOUTS, formatNaira, formatCompact, getTimeAgo,
+} from '@/lib/demoData';
 
 export default function EarningsPage() {
-  const [payouts, setPayouts] = useState<CampaignPayout[]>([]);
-  const [summary, setSummary] = useState<EarningsSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
+  const { token } = useAuth();
+  const [period, setPeriod] = useState<'6m' | '3m' | '1m'>('6m');
+  const [payoutFilter, setPayoutFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("hookik_token") || "" : "";
+  // Calculate stats from demo data
+  const chartData = DEMO_EARNINGS_CHART;
+  const totalEarned = chartData.reduce((s, d) => s + d.total, 0);
+  const totalFees = chartData.reduce((s, d) => s + d.campaignFees, 0);
+  const totalCommissions = chartData.reduce((s, d) => s + d.commissions, 0);
+  const pendingAmount = DEMO_PAYOUTS.filter(p => p.status === 'pending').reduce((s, p) => s + p.amount, 0);
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(amount);
+  const filteredPayouts = DEMO_PAYOUTS.filter(p => {
+    if (payoutFilter === 'all') return true;
+    return p.status === payoutFilter;
+  });
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await creatorCampaignApi.earnings(token, {
-        status: statusFilter || undefined,
-      });
-      const data = res.data as any;
-      setPayouts(data.payouts || []);
-      setSummary(data.summary || null);
-    } catch (err) {
-      console.error("Failed to fetch earnings:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Draw earnings chart on canvas
   useEffect(() => {
-    fetchData();
-  }, [statusFilter]);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    const padding = { top: 20, right: 20, bottom: 40, left: 60 };
+    const chartW = w - padding.left - padding.right;
+    const chartH = h - padding.top - padding.bottom;
+
+    const data = chartData;
+    const maxVal = Math.max(...data.map(d => d.total)) * 1.15;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid lines
+    ctx.strokeStyle = '#F3F4F6';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (chartH / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+
+      // Y-axis labels
+      const val = maxVal - (maxVal / 4) * i;
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatCompact(val), padding.left - 8, y + 4);
+    }
+
+    const barGroupWidth = chartW / data.length;
+    const barWidth = Math.min(barGroupWidth * 0.35, 32);
+    const gap = 3;
+
+    data.forEach((d, i) => {
+      const x = padding.left + barGroupWidth * i + (barGroupWidth - barWidth * 2 - gap) / 2;
+      const feeH = (d.campaignFees / maxVal) * chartH;
+      const commH = (d.commissions / maxVal) * chartH;
+
+      // Campaign fee bar (purple)
+      const grad1 = ctx.createLinearGradient(0, padding.top + chartH - feeH, 0, padding.top + chartH);
+      grad1.addColorStop(0, '#8937CE');
+      grad1.addColorStop(1, '#5F28A5');
+      ctx.fillStyle = grad1;
+      roundRect(ctx, x, padding.top + chartH - feeH, barWidth, feeH, 4);
+
+      // Commission bar (green)
+      const grad2 = ctx.createLinearGradient(0, padding.top + chartH - commH, 0, padding.top + chartH);
+      grad2.addColorStop(0, '#22A756');
+      grad2.addColorStop(1, '#1B8E47');
+      ctx.fillStyle = grad2;
+      roundRect(ctx, x + barWidth + gap, padding.top + chartH - commH, barWidth, commH, 4);
+
+      // X-axis label
+      ctx.fillStyle = '#6B7280';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.month, x + barWidth + gap / 2, padding.top + chartH + 24);
+    });
+  }, [chartData]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
+    <div className="container-app py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold" style={{ color: "#5F28A5" }}>
-          Earnings Dashboard
-        </h1>
-        <p className="text-gray-500 mt-1">Track your campaign income and payouts</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Earnings</h1>
+        <p className="text-gray-500">Track your campaign fees and affiliate commissions</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger">
         <StatCard
           label="Total Earned"
-          value={summary ? formatCurrency(summary.total_earned) : "---"}
-          color="#1B8E47"
+          value={formatNaira(totalEarned)}
+          subtext="All time"
+          color="#1A1D23"
+          bg="#F9FAFB"
+          icon="💰"
         />
         <StatCard
-          label="Pending Payouts"
-          value={summary ? formatCurrency(summary.total_pending) : "---"}
-          color="#EAB308"
-        />
-        <StatCard
-          label="Approved (Processing)"
-          value={summary ? formatCurrency(summary.total_approved) : "---"}
+          label="Campaign Fees"
+          value={formatNaira(totalFees)}
+          subtext={`${Math.round(totalFees / totalEarned * 100)}% of total`}
           color="#5F28A5"
+          bg="#F5F0FF"
+          icon="💵"
+        />
+        <StatCard
+          label="Commissions"
+          value={formatNaira(totalCommissions)}
+          subtext={`${Math.round(totalCommissions / totalEarned * 100)}% of total`}
+          color="#1B8E47"
+          bg="#F0FDF4"
+          icon="📈"
+        />
+        <StatCard
+          label="Pending"
+          value={formatNaira(pendingAmount)}
+          subtext="Awaiting payout"
+          color="#E8590C"
+          bg="#FFF4E6"
+          icon="⏳"
         />
       </div>
 
-      {/* Earnings Over Time Chart Placeholder */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Earnings Over Time</h2>
-        <div className="h-48 flex items-center justify-center rounded-lg" style={{ backgroundColor: "#F2F5FF" }}>
-          <div className="text-center">
-            <svg className="w-12 h-12 mx-auto mb-2" style={{ color: "#5F28A5" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
-            <p className="text-sm text-gray-500">Chart visualization available with active earnings data</p>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* ─── Chart ─── */}
+        <div className="lg:col-span-2">
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-lg">Earnings Over Time</h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm" style={{ background: '#5F28A5' }} />
+                  <span className="text-xs text-gray-500">Fees</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm" style={{ background: '#1B8E47' }} />
+                  <span className="text-xs text-gray-500">Commission</span>
+                </div>
+              </div>
+            </div>
+            <canvas ref={canvasRef} className="w-full" style={{ height: '260px' }} />
           </div>
         </div>
-      </div>
 
-      {/* Filter */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Payout History</h2>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2"
-        >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="processing">Processing</option>
-          <option value="paid">Paid</option>
-          <option value="failed">Failed</option>
-        </select>
-      </div>
+        {/* ─── Earnings Breakdown ─── */}
+        <div className="space-y-4">
+          <div className="card p-5">
+            <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wide mb-4">Earnings Split</h3>
 
-      {/* Payout Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b" style={{ backgroundColor: "#F2F5FF" }}>
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Campaign</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Amount</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="text-center py-12 text-gray-400">Loading...</td>
-              </tr>
-            ) : payouts.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-12">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-gray-500 font-medium">No payouts yet</p>
-                  <p className="text-gray-400 text-xs mt-1">Complete campaigns to start earning</p>
-                  <Link href="/campaigns" className="btn-primary text-sm mt-4 inline-block">
-                    Browse Campaigns
-                  </Link>
-                </td>
-              </tr>
-            ) : (
-              payouts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{p.campaign_title || "—"}</td>
-                  <td className="px-4 py-3 text-gray-500 capitalize">{p.payout_type.replace(/_/g, " ")}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-gray-900">
-                    {formatCurrency(p.amount)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium text-white capitalize"
-                      style={{ backgroundColor: STATUS_COLORS[p.status] || "#6B7280" }}
-                    >
-                      {p.status.replace(/_/g, " ")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {p.paid_at
-                      ? new Date(p.paid_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })
-                      : "—"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+            {/* Donut-style breakdown */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative w-20 h-20">
+                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" strokeWidth="3" />
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none" stroke="#5F28A5" strokeWidth="3"
+                    strokeDasharray={`${Math.round(totalFees / totalEarned * 100)}, 100`} />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-bold">{Math.round(totalFees / totalEarned * 100)}%</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2">
+                <d

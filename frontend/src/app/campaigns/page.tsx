@@ -1,25 +1,19 @@
 /**
  * Campaigns Page
- * Creator: Browse campaigns
- * Brand: Manage campaigns
- * Uses tabs for different views based on user role
+ * Creator view: Browse & discover campaigns with filters, match scores, and earnings preview
+ * Business view: Manage owned campaigns with status tracking
  */
 
 'use client';
 
-import React from 'react';
-import CampaignBrowse from '@/components/campaigns/CampaignBrowse';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { brandCampaignApi, creatorCampaignApi } from '@/services/campaignService';
+import {
+  DEMO_CAMPAIGNS, formatNaira, formatCompact, getDaysLeft, getTimeAgo,
+  getNicheIcon, getPlatformIcon, getMatchColor,
+} from '@/lib/demoData';
 
-// NOTE: Replace with your actual auth hook/context
-// import { useAuth } from '@/hooks/useAuth';
-
-export default function CampaignsPage() {
-  // TODO: Replace with your actual auth context
-  const token = typeof window !== 'undefined' ? localStorage.getItem('hookik_token') || '' : '';
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <CampaignBrowse token={token} />
-    </div>
-  );
-}
+type NicheFilter = 'all' | 'beauty' | 'fashion' | 'food' | 'tech' | 'fitness' | 'lifestyle';
+type TypeFilter =
